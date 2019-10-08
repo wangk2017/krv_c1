@@ -68,8 +68,10 @@ output       UART_INT
 // wires
 //--------------------------------------------------------------------
 wire 		tx_data_reg_wr;
+wire 		rx_data_reg_rd;
 wire [7:0] 	tx_data;
 wire [7:0] 	rx_data;
+wire 		rx_data_read_valid;
 wire [12:0] 	baud_val;
 wire  		data_bits;
 wire 		parity_en;
@@ -108,10 +110,12 @@ uart_regs u_uart_regs (
 .tx_data_reg_wr			(tx_data_reg_wr		),
 .tx_data			(tx_data		),
 .rx_data			(rx_data		),
+.rx_data_read_valid		(rx_data_read_valid	),
 .baud_val			(baud_val		),
 .data_bits			(data_bits		),
 .parity_en			(parity_en		),
 .parity_odd0_even1		(parity_odd0_even1	),
+.rx_data_reg_rd			(rx_data_reg_rd		),
 .rx_ready			(rx_ready		),
 .tx_ready			(tx_ready		),
 .parity_err			(parity_err		),
@@ -121,8 +125,8 @@ uart_regs u_uart_regs (
 
 //UART baud clock generator
 baud_clk_gen u_baud_clk_gen (
-.PCLK				(PCLK		),
-.PRESETN			(PRESETN	),
+.ACLK				(ACLK		),
+.ARESETn			(ARESETn	),
 .baud_val			(baud_val	),
 .tx_baud_pulse			(tx_baud_pulse	),
 .rx_sample_pulse		(rx_sample_pulse)
@@ -130,8 +134,8 @@ baud_clk_gen u_baud_clk_gen (
 
 //UART transmit control block
 uart_tx u_uart_tx (
-.PCLK				(PCLK		),
-.PRESETN			(PRESETN	),
+.ACLK				(ACLK		),
+.ARESETn			(ARESETn	),
 .tx_baud_pulse			(tx_baud_pulse	),
 .tx_data_reg_wr			(tx_data_reg_wr		),
 .tx_data			(tx_data		),
@@ -144,6 +148,21 @@ uart_tx u_uart_tx (
 
 //UART receive control block
 uart_rx u_uart_rx (
+.ACLK			(ACLK),
+.ARESETn		(ARESETn),
+.UART_RX		(UART_RX),
+.rx_sample_pulse	(rx_sample_pulse	),
+.data_bits		(data_bits		),
+.parity_en		(parity_en		),
+.parity_odd0_even1	(parity_odd0_even1	),
+.rx_data_reg_rd		(rx_data_reg_rd		),
+.rx_data		(rx_data		),
+.rx_data_read_valid		(rx_data_read_valid	),
+.rx_ready		(rx_ready		),
+.parity_err		(parity_err		),
+.overflow		(overflow		)
 );
+
+
 
 endmodule

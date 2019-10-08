@@ -24,8 +24,8 @@
 
 
 module uart_tx(
-input        	PCLK,
-input        	PRESETN,
+input        	ACLK,
+input        	ARESETn,
 input 		tx_baud_pulse,
 input  		tx_data_reg_wr,
 input [7:0] 	tx_data,
@@ -38,7 +38,7 @@ output		tx_ready
 
 parameter UART_DATA_WIDTH = 8;
 parameter UART_TX_FIFO_DEPTH = 8;
-parameter UART_TX_FIFO_PTR_WIDTH = 4;
+parameter UART_TX_FIFO_PTR_WIDTH = $clog2(UART_TX_FIFO_DEPTH);
 
 wire uart_tx_buf_rd_ready;
 wire uart_tx_buf_rd_valid;
@@ -46,15 +46,15 @@ wire [7:0] uart_tx_buf_rd_data;
 wire uart_tx_buf_full;
 wire uart_tx_buf_empty;
 
-sync_fifo #(.DATA_WIDTH (UART_DATA_WIDTH), .FIFO_DEPTH(UART_TX_FIFO_DEPTH),.PTR_WIDTH(UART_TX_FIFO_PTR_WIDTH))  UARTT_TX_BUF(
+sync_fifo #(.DATA_WIDTH (UART_DATA_WIDTH), .FIFO_DEPTH(UART_TX_FIFO_DEPTH),.PTR_WIDTH(UART_TX_FIFO_PTR_WIDTH))  uart_tx_buf(
 //write side signals
-.wr_clk		(PCLK),
-.wr_rstn	(PRESETN),
+.wr_clk		(ACLK),
+.wr_rstn	(ARESETn),
 .wr_valid	(tx_data_reg_wr),
 .wr_data	(tx_data),
 //read side signals
-.rd_clk		(PCLK),
-.rd_rstn	(PRESETN),
+.rd_clk		(ACLK),
+.rd_rstn	(ARESETn),
 .rd_ready	(uart_tx_buf_rd_ready),
 .rd_valid	(uart_tx_buf_rd_valid),
 .rd_data	(uart_tx_buf_rd_data),
@@ -77,9 +77,9 @@ reg [2:0] uart_tx_state, uart_tx_next_state;
 
 assign uart_tx_buf_rd_ready = (uart_tx_state == UART_TX_IDLE) && !uart_tx_buf_empty && tx_baud_pulse;
 
-always @ (posedge PCLK or negedge PRESETN)
+always @ (posedge ACLK or negedge ARESETn)
 begin
-	if(!PRESETN)
+	if(!ARESETn)
 	begin
 		uart_tx_state <= UART_TX_IDLE;
 	end
@@ -136,9 +136,9 @@ begin
 end
 
 //tx_data_bit_cnt
-always @ (posedge PCLK or negedge PRESETN)
+always @ (posedge ACLK or negedge ARESETn)
 begin
-	if(!PRESETN)
+	if(!ARESETn)
 	begin
 		tx_data_bit_cnt <= 3'h0;
 	end
@@ -162,9 +162,9 @@ begin
 end
 
 //TX
-always @ (posedge PCLK or negedge PRESETN)
+always @ (posedge ACLK or negedge ARESETn)
 begin
-	if(!PRESETN)
+	if(!ARESETn)
 	begin
 		UART_TX <= 1'b1;
 	end
