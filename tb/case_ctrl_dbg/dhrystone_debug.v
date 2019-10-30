@@ -14,9 +14,12 @@ end
 
 
 wire test_end1;
-//assign test_end1 = dec_pc == 32'h001007c;
+assign test_end1 = dec_pc == 32'h000007c;
 //assign test_end1 = 0;
-assign test_end1 = (uart_tx_data==8'hff);
+//assign test_end1 = (uart_tx_data==8'hff);
+
+//performance
+`include "perf.v"
 
 integer fp_z;
 
@@ -30,6 +33,7 @@ begin
 	fp_z =$fopen ("./out/uart_tx_data_dhrystone.txt","w");
 @(posedge test_end1)
 begin
+	#1;
 	$fclose(fp_z);
 	$display ("TEST_END\n");
 	$display ("Print data is stored in out/uart_tx_data_dhrystone.txt\n");
@@ -37,7 +41,8 @@ begin
 end
 end
 
-always @(posedge DUT.cpu_clk)
+
+always @(posedge cpu_clk)
 begin
 	if(uart_tx_wr)
 		begin
@@ -53,13 +58,13 @@ parameter MAINDONE		= 32'h0001007c;
 wire [31:0] mret_addr = DUT.u_core.u_fetch.mepc;
 wire [31:0] mret_instr = DUT.u_core.u_fetch.mret;
 
-wire [31:0] mem_addr = DUT.u_core.u_dmem_ctrl.mem_addr;
+wire [31:0] mem_addr = DUT.u_core.u_dmem_ctrl.mem_addr_mem;
 wire mem_st = DUT.u_core.u_dmem_ctrl.store_mem;
 wire[31:0] st_data = DUT.u_core.u_dmem_ctrl.store_data_mem;
 wire[31:0] ld_data = DUT.u_core.u_dmem_ctrl.mem_read_data;
 wire ld_data_vld = DUT.u_core.u_dmem_ctrl.mem_wb_data_valid;
 
-always @(posedge DUT.cpu_clk)
+always @(posedge cpu_clk)
 begin
 	if((mem_addr==32'h4400bff8) && ld_data_vld)
 	begin
@@ -73,7 +78,7 @@ end
 wire div = DUT.u_core.u_dec.alu_div_dec;
 wire [31:0] src1_data = DUT.u_core.u_dec.src_data1_dec;
 wire [31:0] src2_data = DUT.u_core.u_dec.src_data2_dec;
-always @(posedge DUT.cpu_clk)
+always @(posedge cpu_clk)
 begin
 	if((src1_data==32'h19bfcc0) || (src2_data==32'h19bfcc0))
 	begin
@@ -86,7 +91,7 @@ begin
 end
 
 /*
-always @(posedge DUT.cpu_clk)
+always @(posedge cpu_clk)
 begin
 	if(div)
 	begin
@@ -99,7 +104,7 @@ begin
 end
 
 */
-always @(posedge DUT.cpu_clk)
+always @(posedge cpu_clk)
 begin
 	begin
 		case (dec_pc)

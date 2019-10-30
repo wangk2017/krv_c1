@@ -932,8 +932,8 @@ wire [5:0] hazard_rd = load_hazard_2nd ? hazard_rd_2nd : hazard_rd_1st;
 reg [5:0] hazard_rd_1st_r;
 reg [5:0] hazard_rd_2nd_r;
 
-wire load_hazard_1st_clr = mem_wb_data_valid && (rd_mem == hazard_rd_1st_r);
-wire load_hazard_2nd_clr = mem_wb_data_valid && (rd_mem == hazard_rd_2nd_r);
+wire load_hazard_1st_clr = mem_wb_data_valid && ((rd_mem == hazard_rd_1st_r) || (rd_mem == hazard_rd_1st));
+wire load_hazard_2nd_clr = mem_wb_data_valid && ((rd_mem == hazard_rd_2nd_r) || (rd_mem == hazard_rd_2nd));
 
 assign load_hazard_1st =(((rs1_wait_load_1st || rs2_wait_load_1st )) ) && (!mret) && !load_hazard_1st_r && !load_hazard_1st_clr;
 assign load_hazard_2nd =(((rs1_wait_load_2nd || rs2_wait_load_2nd )) ) && (!mret) && !load_hazard_2nd_r && !load_hazard_1st_r && !load_hazard_2nd_clr && !load_hazard_1st_clr;
@@ -941,10 +941,10 @@ assign load_hazard_2nd =(((rs1_wait_load_2nd || rs2_wait_load_2nd )) ) && (!mret
 
 
 wire load_hazard_stall_1st = (load_hazard_1st || load_hazard_1st_r) && (!load_hazard_1st_clr);
-wire load_hazard_stall_2nd = (load_hazard_2nd || load_hazard_2nd_r) && (!load_hazard_2nd_clr);
+//wire load_hazard_stall_2nd = (load_hazard_2nd || load_hazard_2nd_r) && (!load_hazard_2nd_clr);
 
 wire load_hazard_stall;
-assign load_hazard_stall = load_hazard_stall_1st || load_hazard_stall_2nd;  
+assign load_hazard_stall = load_hazard_stall_1st;// || load_hazard_stall_2nd;  
 
 
 always@(posedge cpu_clk or negedge cpu_rstn)
@@ -1053,6 +1053,15 @@ en_cnt u_load_hazard_stall_cnt (.clk(cpu_clk), .rstn(cpu_rstn), .en(load_hazard_
 
 wire [31:0] fence_stall_cnt;
 en_cnt u_fence_stall_cnt (.clk(cpu_clk), .rstn(cpu_rstn), .en(fence_stall), .cnt (fence_stall_cnt));
+
+wire [31:0] branch_cnt;
+wire branch = instruction_is_branch && (!flush_dec) && (dec_ready);
+en_cnt u_branch_cnt (.clk(cpu_clk), .rstn(cpu_rstn), .en(branch), .cnt (branch_cnt));
+
+wire [31:0] mis_predict_cnt;
+wire valid_mis_predict = branch_taken_ex && dec_ready;
+en_cnt u_mis_predict_cnt (.clk(cpu_clk), .rstn(cpu_rstn), .en(valid_mis_predict), .cnt (mis_predict_cnt));
+
 
 endmodule
 

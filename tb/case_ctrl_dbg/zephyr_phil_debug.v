@@ -109,4 +109,31 @@ begin
 		end
 end
 
+wire wb_valid = DUT.u_core.u_dec.wr_valid_wb;
+wire[5:0] wb_rd = DUT.u_core.u_dec.rd_wb;
+wire [31:0] wb_data = DUT.u_core.u_dec.wr_data_wb;
+
+
+integer fp_t;
+
+initial
+begin
+
+	fp_t =$fopen ("./out/GRPS1.txt","w");
+@(posedge test_end1)
+begin
+@(posedge DUT.cpu_clk);
+	$fclose(fp_t);
+end
+end
+
+
+always @(posedge DUT.cpu_clk)
+begin
+	if(wb_valid && (wb_rd == 1))
+		begin
+			$fwrite(fp_t, "@time %t, write gprs1 = %h \n", $time, wb_data);
+		end
+
+end
 

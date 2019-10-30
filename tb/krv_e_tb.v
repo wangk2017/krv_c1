@@ -25,6 +25,9 @@ krv_e DUT (
 	#20 clk_in <= ~clk_in;
 	end
 	
+wire cpu_clk = DUT.cpu_clk;
+wire cpu_rstn = DUT.cpu_rstn;
+
 wire [31:0] dec_pc = DUT.u_core.u_fetch.pc_dec;
 wire uart_tx_wr = DUT.u_uart.tx_data_reg_wr;
 wire[7:0] uart_tx_data = DUT.u_uart.tx_data;
@@ -37,6 +40,11 @@ wire[7:0] uart_tx_data = DUT.u_uart.tx_data;
 `ifdef DHRYSTONE
 `include "dhrystone_debug.v"
 `endif
+
+`ifdef COREMARK
+`include "coremark_debug.v"
+`endif
+
 
 `ifdef ZEPHYR
 `include "zephyr_debug.v"
@@ -81,6 +89,7 @@ assign test_end = (dec_pc == 32'h48);
 assign test_end = 0; 
 `endif
 
+reg time_out;
 
 initial 
 begin
@@ -137,6 +146,10 @@ begin
 	begin
 	@(posedge DUT.cpu_clk);
 	end
+	time_out <= 1'b1;
+	@(posedge DUT.cpu_clk);
+	@(posedge DUT.cpu_clk);
+
 	$display (" ||===================================||");
 	$display (" ||===================================||");
 	$display (" ||                                   ||");

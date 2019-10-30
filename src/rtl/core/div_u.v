@@ -133,7 +133,10 @@ end
 
 assign done = single_cycle_div | (div_cycle_cnt == `DATA_WIDTH);
 
+assign div_result = div_src_data1 / div_src_data2;
+assign rem_result = div_src_data1 % div_src_data2;
+/*
 assign div_result = data2equ0 ? {`DATA_WIDTH{1'b1}} : (data2equ1 ? div_src_data1 :  (data1ltdata2 ? {`DATA_WIDTH{1'b0}} : (done ? hold_r[`DATA_WIDTH - 1 : 0] : {`DATA_WIDTH{1'b0}})));
 assign rem_result = data2equ1 ? {`DATA_WIDTH{1'b0}} : ((data1ltdata2 | data2equ0) ? div_src_data1 : (done ? {1'b0,hold_r[D_DATA_WIDTH - 1 : `DATA_WIDTH + 1]} : {`DATA_WIDTH{1'b0}}));
-
+*/
 endmodule
